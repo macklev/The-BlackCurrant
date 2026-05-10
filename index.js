@@ -24,6 +24,7 @@ app.use("/post", postRoutes)
 app.use("/friend", friendRoutes);
 app.use("/comment", commentRoutes)
 app.use("/profile", profileRoutes);
+
 const PORT = process.env.PORT || 3500
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}!!`))

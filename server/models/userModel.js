@@ -67,12 +67,24 @@ async function register(user) {
     return cuser[0];
 }
 
-  async function updateUser(user_id, user) {
+ async function updateUser(user_id, user) {
+    let hashedPassword = await bcrypt.hash(user.password, 10);
+
     let sql = `
-      UPDATE users SET first_name = ?, last_name = ?, email = ?, password = ?, handle = ? WHERE user_id = ?;
-    `
-    await con.query(sql, [user.first_name, user.last_name, user.email, user.password, user.handle, user_id])
-  }
+      UPDATE users 
+      SET first_name = ?, last_name = ?, email = ?, password = ?, handle = ? 
+      WHERE user_id = ?;
+    `;
+
+    await con.query(sql, [
+        user.first_name,
+        user.last_name,
+        user.email,
+        hashedPassword,
+        user.handle,
+        user_id
+    ]);
+}
 
   async function deleteUser(user_id) {
     let sql = `
