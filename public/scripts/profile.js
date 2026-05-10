@@ -8,7 +8,6 @@ const profileMessage = document.getElementById("profile-message");
 const profilePreview = document.getElementById("profile-preview");
 const profileName = document.getElementById("profile-name");
 const profileHandle = document.getElementById("profile-handle");
-const profileEmail = document.getElementById("profile-email");
 const profileBioDisplay = document.getElementById("profile-bio-display");
 
 if (!user) {
@@ -34,7 +33,6 @@ async function loadProfile() {
 function displayProfile(profile) {
     profileName.textContent = `${profile.first_name} ${profile.last_name}`;
     profileHandle.textContent = `@${profile.handle}`;
-    profileEmail.textContent = profile.email;
 
     profileBioDisplay.textContent = profile.profile_bio || "No bio yet.";
 
