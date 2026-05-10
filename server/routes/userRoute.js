@@ -43,5 +43,13 @@ router
         res.status(401).send({message: err.message})
     }
 })
+.get("/search/:handle", async (req, res) => {
+    try {
+        const users = await User.searchUsers(req.params.handle);
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+})
 
 module.exports = router

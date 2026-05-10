@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Friends | BlackCurrent</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav id="nav"></nav>
+
+    <main class="page-container">
+        <h1>Friends</h1>
+
+        <section class="friend-search-section">
+            <h2>Find Friends</h2>
+
+            <form id="friend-search-form">
+                <input 
+                    type="text" 
+                    id="friend-search-input" 
+                    placeholder="Search by handle"
+                    required
+                >
+
+                <button type="submit">Search</button>
+            </form>
+
+            <p id="friends-message"></p>
+
+            <section id="friend-search-results"></section>
+        </section>
+
+        <section class="friends-section">
+            <h2>Your Friends</h2>
+            <section id="friends-list"></section>
+        </section>
+    </main>
+
+    <footer>
+        <h3>&copy; 2026 The BlackCurrent. All rights reserved.</h3>  
+    </footer>
+
+    <script type="module" src="scripts/main.js"></script>
+    <script src="scripts/friends.js" defer></script>
+</body>
+</html>

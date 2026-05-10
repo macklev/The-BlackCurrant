@@ -81,4 +81,14 @@ async function register(user) {
     await con.query(sql, [user_id])
   }
 
-module.exports = { getAllUsers, register, updateUser, login, deleteUser }
+  async function searchUsers(handle) {
+    let sql = `
+        SELECT user_id, first_name, last_name, email, handle
+        FROM users
+        WHERE handle LIKE ?;
+    `;
+
+    return await con.query(sql, [`%${handle}%`]);
+}
+
+module.exports = { getAllUsers, register, updateUser, login, deleteUser, searchUsers }

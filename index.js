@@ -7,6 +7,9 @@ app.use(express.static("public"))
 
 const userRoutes = require("./server/routes/userRoute")
 const postRoutes = require("./server/routes/postRoute")
+const friendRoutes = require("./server/routes/friendRoute")
+const commentRoutes = require("./server/routes/commentRoute")
+const profileRoutes = require("./server/routes/profileRoute")
 
 //CORS middleware
 app.use(function(req, res, next) {
@@ -18,6 +21,9 @@ app.use(function(req, res, next) {
 
 app.use("/user", userRoutes)
 app.use("/post", postRoutes)
+app.use("/friend", friendRoutes);
+app.use("/comment", commentRoutes)
+app.use("/profile", profileRoutes);
 const PORT = process.env.PORT || 3500
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}!!`))

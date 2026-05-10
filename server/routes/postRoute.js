@@ -43,5 +43,13 @@ router
         res.status(401).send({message: err.message})
     }
 })
+.get("/feed/:user_id", async (req, res) => {
+    try {
+        const posts = await Post.getFeedPosts(req.params.user_id);
+        res.json(posts);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+})
 
 module.exports = router

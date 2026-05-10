@@ -6,8 +6,11 @@ let nav = document.querySelector('nav')
 if(cUser) {
     nav.innerHTML = `
        <ul>
-         <li><a href="post.html">Post</a></li>
-         <li><a id="logout" href="#">Logout</a></li>
+        <li><a href="feed.html">Feed</a></li>
+        <li><a href="post.html">Post</a></li>
+        <li><a href="friends.html">Friends</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a id="logout" href="#">Logout</a></li>
         </ul>
     `
 } else {

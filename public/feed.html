@@ -10,29 +10,20 @@
     </style>
 </head>
 <body>
-    <header>
-    <nav>
-        <ul>
-            <li><a href="login.html">Login</a></li>
-            <li><a href="register.html">Register</a></li>
-            <li><a href="post.html">Post</a></li>
-            <li><a href="feed.html">Feed</a></li>
-            <button id="logout">Logout</button>
-        </ul>
-    </nav>
 
-    <img src="./Images/blackcurrent.png" alt="Logo" class="logo">
-    <h1>The BlackCurrent</h1>
-    <hr>
-    </header>
+    <nav id="nav"></nav>
 
-    <main>
+    <main class="page-container">
+        <h1>Your Feed</h1>
+
         <section class="feed-posts"></section>
     </main>
 
     <footer>
-        <h3>&copy; 2026 The BlackCurrent. All rights reserved.</h3>
+        <h3>&copy; 2026 The BlackCurrent. All rights reserved.</h3>  
     </footer>
+
     <script type="module" src="scripts/main.js"></script>
+    <script src="scripts/feed.js" defer></script>
 </body>
 </html>
