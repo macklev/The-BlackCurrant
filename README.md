@@ -11,8 +11,8 @@ Users will be able to post, customize their profile, and add each other as frien
 This is the ERD and business rules for my proposed social media. This outlines the different entities I will be defining in my database. Basically, all of the information about a user will be stored in these entities and their associated attributes. 
 
 
-![BlackCurrent ERD](/Images/ERD.png)
+![BlackCurrent ERD](public/Images/ERD.png)
 
 This is then the relations in 3NF form for my site. This is how each entity relates to each other and builds on each other.
 
-![BlackCurrent Relations](/Images/relations.png)
+![BlackCurrent Relations](public/Images/relations.png)
