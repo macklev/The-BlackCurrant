@@ -3,8 +3,10 @@ const express = require("express")
 const app = express()
 
 app.use(express.json())
+app.use(express.static("public"))
 
 const userRoutes = require("./server/routes/userRoute")
+const postRoutes = require("./server/routes/postRoute")
 
 //CORS middleware
 app.use(function(req, res, next) {
@@ -15,7 +17,7 @@ app.use(function(req, res, next) {
 });
 
 app.use("/user", userRoutes)
-
+app.use("/post", postRoutes)
 const PORT = process.env.PORT || 3500
 
 app.listen(PORT, () => console.log(`Server listening on port ${PORT}!!`))

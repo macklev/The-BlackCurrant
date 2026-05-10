@@ -18,6 +18,7 @@
         <li><a href="register.html">Register </a></li>
         <li><a href="post.html">Post</a></li>
         <li><a href="feed.html">Feed</a></li>
+        <button id="logout">Logout</button>
     </nav>
     </ul>
 
@@ -29,20 +30,20 @@
 <main>
     <form class="make-post" id="post-form">
         <textarea id="post-text" name="post" placeholder="Write your post here." rows="4"></textarea><br>
-        <input type="file" id="post-image" name="post-image" accept="image/*">
         <input type="submit" value="Post" id="button">
         <p id="post-message" aria-live="polite"></p>
     </form>
 
-    <div class="post-feed">
+    <section class="post-feed">
         
-    </div>
+    </section>
 </main>
 
 <footer>
     <h3>&copy; 2026 The BlackCurrent. All rights reserved.</h3>  
 </footer>
 
-<script src="app.js" defer></script>
+<script src="scripts/post.js" defer></script>
+<script type="module" src="scripts/main.js"></script>
 </body>
 </html>

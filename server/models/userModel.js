@@ -30,7 +30,7 @@ async function register(user) {
   let hashedPassword = await bcrypt.hash(user.password, 10)
   let sql= `
     INSERT INTO users (first_name, last_name, email, password, handle)
-    VALUES (user.first_name, user.last_name, user.email, ?, user.handle);
+    VALUES (?, ?, ?, ?, ?);
   `
 
     await con.query(sql, [user.first_name, user.last_name, user.email, hashedPassword, user.handle])
@@ -49,11 +49,36 @@ async function register(user) {
   }
 
   async function userExists(user) {
+    let sql;
+    let cuser;
+
+    if (user.handle) {
+        sql = `
+          SELECT * FROM users WHERE email = ? OR handle = ?;
+        `;
+        cuser = await con.query(sql, [user.email, user.handle]);
+    } else {
+        sql = `
+          SELECT * FROM users WHERE email = ?;
+        `;
+        cuser = await con.query(sql, [user.email]);
+    }
+
+    return cuser[0];
+}
+
+  async function updateUser(user_id, user) {
     let sql = `
-      SELECT * FROM users WHERE email = ? OR handle = ?;
+      UPDATE users SET first_name = ?, last_name = ?, email = ?, password = ?, handle = ? WHERE user_id = ?;
     `
-    let cuser = await con.query(sql, [user.email, user.handle])
-    return cuser[0]
+    await con.query(sql, [user.first_name, user.last_name, user.email, user.password, user.handle, user_id])
   }
 
-module.exports = { getAllUsers, register }
+  async function deleteUser(user_id) {
+    let sql = `
+      DELETE FROM users WHERE user_id = ?;
+    `
+    await con.query(sql, [user_id])
+  }
+
+module.exports = { getAllUsers, register, updateUser, login, deleteUser }

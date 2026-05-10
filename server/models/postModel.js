@@ -22,4 +22,42 @@ async function getAllPosts() {
     return await con.query(sql)
 }
 
-module.exports = { getAllPosts }
+async function getPostsByUserId(user_id) {
+    let sql = `
+      SELECT * FROM posts WHERE user_id = ? ORDER BY date_created DESC;
+    `
+    return await con.query(sql, [user_id])
+}
+
+async function createPost(post) {
+    let sql = `
+      INSERT INTO posts (user_id, post_content)
+      VALUES (?, ?);
+    `
+
+    await con.query(sql, [post.user_id, post.post_content])
+
+    return await getPostsByUserId(post.user_id)
+}
+
+async function updatePost(post_id, post) {
+    let sql = `
+      UPDATE posts SET post_content = ? WHERE post_id = ?;
+    `
+
+    await con.query(sql, [post.post_content, post_id])
+
+    return await getAllPosts()
+}
+
+async function deletePost(post_id) {
+    let sql = `
+      DELETE FROM posts WHERE post_id = ?;
+    `
+
+    await con.query(sql, [post_id])
+
+    return await getAllPosts()
+}
+
+module.exports = { getAllPosts, createPost, createPostTable, updatePost, deletePost, getPostsByUserId}

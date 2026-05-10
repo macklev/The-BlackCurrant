@@ -1,5 +1,5 @@
 {
-  "name": "project",
+  "name": "blackcurrent",
   "version": "1.0.0",
   "description": "The BlackCurrent",
   "keywords": [
@@ -14,10 +14,11 @@
     "url": "git+https://github.com/macklev/The-BlackCurrent.git"
   },
   "license": "ISC",
-  "author": "",
+  "author": "Mackenzie Levitt",
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "test"
   },
