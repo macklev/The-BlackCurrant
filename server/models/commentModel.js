@@ -1,67 +1,59 @@
-const con= require("./db_connect");
-
-async function createCommentTable() {
-    let sql = `
-      CREATE TABLE IF NOT EXISTS comments (
-        comment_id INT AUTO_INCREMENT,
-        post_id INT NOT NULL,
-        user_id INT NOT NULL,
-        comment_content VARCHAR(280) NOT NULL,
-        date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT comment_pk PRIMARY KEY (comment_id),
-        CONSTRAINT comment_post_fk FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
-        CONSTRAINT comment_user_fk FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-        ); `
-
-    await con.query(sql)
-}
+const { getNextSequence } = require("./counterModel");
+const { toPlain } = require("./plain");
+const { User, Profile, Comment } = require("./collections");
 
 async function getCommentsByPostId(post_id) {
-    let sql = `
-        SELECT 
-            comments.comment_id,
-            comments.post_id,
-            comments.user_id,
-            comments.comment_content,
-            comments.date_created,
-            users.handle,
-            users.first_name,
-            users.last_name,
-            profiles.profile_picture
-        FROM comments
-        JOIN users ON comments.user_id = users.user_id
-        LEFT JOIN profiles ON users.user_id = profiles.user_id
-        WHERE comments.post_id = ?
-        ORDER BY comments.date_created ASC;
-    `;
+    const numericPostId = Number(post_id);
+    const comments = await Comment.find({ post_id: numericPostId }).sort({ date_created: 1 });
+    const userIds = [...new Set(comments.map(comment => comment.user_id))];
 
-    return await con.query(sql, [post_id]);
+    if (userIds.length === 0) {
+        return [];
+    }
+
+    const users = await User.find({ user_id: { $in: userIds } }).select("-password");
+    const profiles = await Profile.find({ user_id: { $in: userIds } });
+    const userMap = new Map(users.map(user => [user.user_id, toPlain(user)]));
+    const profileMap = new Map(profiles.map(profile => [profile.user_id, toPlain(profile)]));
+
+    return comments.map(comment => {
+        const commentData = toPlain(comment);
+        const user = userMap.get(comment.user_id) || {};
+        const profile = profileMap.get(comment.user_id) || {};
+
+        return {
+            ...commentData,
+            handle: user.handle,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            profile_picture: profile.profile_picture,
+            profile_bio: profile.profile_bio
+        };
+    });
 }
 
 async function createComment(comment) {
-    let sql = `
-      INSERT INTO comments (post_id, user_id, comment_content)
-      VALUES (?, ?, ?);
-    `
+    const numericPostId = Number(comment.post_id);
+    const numericUserId = Number(comment.user_id);
+    const comment_id = await getNextSequence("comments");
 
-    await con.query(sql, [comment.post_id, comment.user_id, comment.comment_content])
+    await Comment.create({
+        comment_id,
+        post_id: numericPostId,
+        user_id: numericUserId,
+        comment_content: comment.comment_content
+    });
 
-    return await getCommentsByPostId(comment.post_id)
+    return await getCommentsByPostId(numericPostId);
 }
 
 async function deleteComment(comment_id) {
-    let sql = `
-        DELETE FROM comments
-        WHERE comment_id = ?;
-    `;
-
-    await con.query(sql, [comment_id]);
+    await Comment.deleteOne({ comment_id: Number(comment_id) });
 
     return { message: "Comment deleted successfully." };
 }
 
 module.exports = {
-    createCommentTable,
     getCommentsByPostId,
     createComment,
     deleteComment

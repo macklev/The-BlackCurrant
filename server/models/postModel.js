@@ -1,90 +1,83 @@
-const con = require("./db_connect")
-
-async function createPostTable() {
-    let sql = `
-      CREATE TABLE IF NOT EXISTS posts (
-        post_id INT AUTO_INCREMENT,
-        user_id INT, 
-        post_content VARCHAR(280) NOT NULL,
-        date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT post_pk PRIMARY KEY (post_id),
-        CONSTRAINT post_user_fk FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
-        ); `
-
-    await con.query(sql)
-}
-
+const { getNextSequence } = require("./counterModel");
+const { toPlain } = require("./plain");
+const { User, Friend, Profile, Post } = require("./collections");
 
 async function getAllPosts() {
-    let sql = `
-      SELECT * FROM posts;
-    `
-    return await con.query(sql)
+    const posts = await Post.find().sort({ date_created: -1 });
+    return posts.map(toPlain);
 }
 
 async function getPostsByUserId(user_id) {
-    let sql = `
-      SELECT * FROM posts WHERE user_id = ? ORDER BY date_created DESC;
-    `
-    return await con.query(sql, [user_id])
+    const numericUserId = Number(user_id);
+    const posts = await Post.find({ user_id: numericUserId }).sort({ date_created: -1 });
+    return posts.map(toPlain);
 }
 
 async function getFeedPosts(user_id) {
-    let sql = `
-        SELECT 
-            posts.post_id,
-            posts.user_id,
-            posts.post_content,
-            posts.date_created,
-            users.handle,
-            users.first_name,
-            users.last_name,
-            profiles.profile_picture,
-            profiles.profile_bio
-        FROM posts
-        JOIN users ON posts.user_id = users.user_id
-        LEFT JOIN profiles ON users.user_id = profiles.user_id
-        WHERE posts.user_id = ?
-           OR posts.user_id IN (
-                SELECT friend_id
-                FROM friends
-                WHERE user_id = ?
-           )
-        ORDER BY posts.date_created DESC;
-    `;
+    const numericUserId = Number(user_id);
+    const friendships = await Friend.find({ user_id: numericUserId }).select("friend_id");
+    const friendIds = friendships.map(friendship => friendship.friend_id);
 
-    return await con.query(sql, [user_id, user_id]);
+    const posts = await Post.find({
+        $or: [
+            { user_id: numericUserId },
+            { user_id: { $in: friendIds } }
+        ]
+    }).sort({ date_created: -1 });
+
+    if (posts.length === 0) {
+        return [];
+    }
+
+    const userIds = [...new Set(posts.map(post => post.user_id))];
+    const users = await User.find({ user_id: { $in: userIds } }).select("-password");
+    const profiles = await Profile.find({ user_id: { $in: userIds } });
+    const userMap = new Map(users.map(user => [user.user_id, toPlain(user)]));
+    const profileMap = new Map(profiles.map(profile => [profile.user_id, toPlain(profile)]));
+
+    return posts.map(post => {
+        const postData = toPlain(post);
+        const user = userMap.get(post.user_id) || {};
+        const profile = profileMap.get(post.user_id) || {};
+
+        return {
+            ...postData,
+            handle: user.handle,
+            first_name: user.first_name,
+            last_name: user.last_name,
+            profile_picture: profile.profile_picture,
+            profile_bio: profile.profile_bio
+        };
+    });
 }
 
 async function createPost(post) {
-    let sql = `
-      INSERT INTO posts (user_id, post_content)
-      VALUES (?, ?);
-    `
+    const numericUserId = Number(post.user_id);
+    const post_id = await getNextSequence("posts");
 
-    await con.query(sql, [post.user_id, post.post_content])
+    await Post.create({
+        post_id,
+        user_id: numericUserId,
+        post_content: post.post_content
+    });
 
-    return await getPostsByUserId(post.user_id)
+    return await getPostsByUserId(numericUserId);
 }
 
 async function updatePost(post_id, post) {
-    let sql = `
-      UPDATE posts SET post_content = ? WHERE post_id = ?;
-    `
+    await Post.findOneAndUpdate(
+        { post_id: Number(post_id) },
+        { post_content: post.post_content },
+        { new: true }
+    );
 
-    await con.query(sql, [post.post_content, post_id])
-
-    return await getAllPosts()
+    return await getAllPosts();
 }
 
 async function deletePost(post_id) {
-    let sql = `
-      DELETE FROM posts WHERE post_id = ?;
-    `
+    await Post.deleteOne({ post_id: Number(post_id) });
 
-    await con.query(sql, [post_id])
-
-    return await getAllPosts()
+    return await getAllPosts();
 }
 
-module.exports = { getAllPosts, createPost, createPostTable, updatePost, deletePost, getPostsByUserId, getFeedPosts }
+module.exports = { getAllPosts, createPost, updatePost, deletePost, getPostsByUserId, getFeedPosts };

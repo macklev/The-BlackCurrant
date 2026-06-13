@@ -1,53 +1,51 @@
-const con = require("./db_connect");
+const { getNextSequence } = require("./counterModel");
+const { toPlain } = require("./plain");
+const { Profile, User } = require("./collections");
 
 async function getProfileByUserId(user_id) {
-    let sql = `
-        SELECT 
-            profiles.profile_id,
-            profiles.profile_picture,
-            profiles.profile_bio,
-            profiles.user_id,
-            users.first_name,
-            users.last_name,
-            users.handle
-        FROM users
-        LEFT JOIN profiles ON users.user_id = profiles.user_id
-        WHERE users.user_id = ?;
-    `;
+    const numericUserId = Number(user_id);
+    const profile = await Profile.findOne({ user_id: numericUserId });
+    const user = await User.findOne({ user_id: numericUserId }).select("-password");
 
-    const result = await con.query(sql, [user_id]);
-    return result[0];
+    if (!user) return null;
+
+    const profileData = toPlain(profile) || {};
+    const userData = toPlain(user);
+
+    return {
+        ...profileData,
+        user_id: userData.user_id,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        handle: userData.handle
+    };
 }
 
 async function createOrUpdateProfile(profile) {
-    let existingProfile = await getProfileByUserId(profile.user_id);
+    const numericUserId = Number(profile.user_id);
+    const existingProfile = await Profile.findOne({ user_id: numericUserId });
 
-    if (existingProfile && existingProfile.profile_id) {
-        let sql = `
-            UPDATE profiles
-            SET profile_picture = ?, profile_bio = ?
-            WHERE user_id = ?;
-        `;
-
-        await con.query(sql, [
-            profile.profile_picture,
-            profile.profile_bio,
-            profile.user_id
-        ]);
+    if (existingProfile) {
+        await Profile.findOneAndUpdate(
+            { user_id: numericUserId },
+            {
+                profile_picture: profile.profile_picture,
+                profile_bio: profile.profile_bio
+            },
+            { new: true }
+        );
     } else {
-        let sql = `
-            INSERT INTO profiles (profile_picture, profile_bio, user_id)
-            VALUES (?, ?, ?);
-        `;
+        const profile_id = await getNextSequence("profiles");
 
-        await con.query(sql, [
-            profile.profile_picture,
-            profile.profile_bio,
-            profile.user_id
-        ]);
+        await Profile.create({
+            profile_id,
+            profile_picture: profile.profile_picture,
+            profile_bio: profile.profile_bio,
+            user_id: numericUserId
+        });
     }
 
-    return await getProfileByUserId(profile.user_id);
+    return await getProfileByUserId(numericUserId);
 }
 
 module.exports = {

@@ -1,106 +1,83 @@
-const con = require("./db_connect")
-const bcrypt = require("bcrypt")
-
-async function createUserTable() {
-    let sql = `
-      CREATE TABLE IF NOT EXISTS users (
-        user_id INT AUTO_INCREMENT,
-        first_name VARCHAR(255) NOT NULL,
-        last_name VARCHAR(255) NOT NULL,
-        email VARCHAR(255) NOT NULL UNIQUE,
-        password VARCHAR(255) NOT NULL,
-        handle VARCHAR(255) NOT NULL UNIQUE,
-        CONSTRAINT user_pk PRIMARY KEY (user_id)
-        ); `
-
-    await con.query(sql)
-  }
+const bcrypt = require("bcrypt");
+const { getNextSequence } = require("./counterModel");
+const { toPlain } = require("./plain");
+const { User } = require("./collections");
 
 async function getAllUsers() {
-    let sql = `
-      SELECT * FROM users;
-    `
-    return await con.query(sql)
+    const users = await User.find().select("-password").sort({ user_id: 1 });
+    return users.map(toPlain);
+}
+
+async function userExists(user) {
+    if (user.handle) {
+        const existingUser = await User.findOne({
+            $or: [{ email: user.email }, { handle: user.handle }]
+        });
+
+        return toPlain(existingUser);
+    }
+
+    const existingUser = await User.findOne({ email: user.email });
+    return toPlain(existingUser);
 }
 
 async function register(user) {
-  let cuser= await userExists(user)
-  if(cuser) throw Error("User already exists")
+    const currentUser = await userExists(user);
+    if (currentUser) throw Error("User already exists");
 
-  let hashedPassword = await bcrypt.hash(user.password, 10)
-  let sql= `
-    INSERT INTO users (first_name, last_name, email, password, handle)
-    VALUES (?, ?, ?, ?, ?);
-  `
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const user_id = await getNextSequence("users");
 
-    await con.query(sql, [user.first_name, user.last_name, user.email, hashedPassword, user.handle])
+    const createdUser = await User.create({
+        user_id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        password: hashedPassword,
+        handle: user.handle
+    });
 
-    return await userExists(user)
-  }
-
-  async function login(user) {
-    let cuser= await userExists(user)
-    if(!cuser) throw Error("User does not exist")
-
-    let match = await bcrypt.compare(user.password, cuser.password)
-    if(!match) throw Error("Incorrect password")
-
-    return cuser
-  }
-
-  async function userExists(user) {
-    let sql;
-    let cuser;
-
-    if (user.handle) {
-        sql = `
-          SELECT * FROM users WHERE email = ? OR handle = ?;
-        `;
-        cuser = await con.query(sql, [user.email, user.handle]);
-    } else {
-        sql = `
-          SELECT * FROM users WHERE email = ?;
-        `;
-        cuser = await con.query(sql, [user.email]);
-    }
-
-    return cuser[0];
+    return toPlain(createdUser);
 }
 
- async function updateUser(user_id, user) {
-    let hashedPassword = await bcrypt.hash(user.password, 10);
+async function login(user) {
+    const currentUser = await userExists(user);
+    if (!currentUser) throw Error("User does not exist");
 
-    let sql = `
-      UPDATE users 
-      SET first_name = ?, last_name = ?, email = ?, password = ?, handle = ? 
-      WHERE user_id = ?;
-    `;
+    const match = await bcrypt.compare(user.password, currentUser.password);
+    if (!match) throw Error("Incorrect password");
 
-    await con.query(sql, [
-        user.first_name,
-        user.last_name,
-        user.email,
-        hashedPassword,
-        user.handle,
-        user_id
-    ]);
+    return currentUser;
 }
 
-  async function deleteUser(user_id) {
-    let sql = `
-      DELETE FROM users WHERE user_id = ?;
-    `
-    await con.query(sql, [user_id])
-  }
+async function updateUser(user_id, user) {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
 
-  async function searchUsers(handle) {
-    let sql = `
-        SELECT user_id, first_name, last_name, email, handle
-        FROM users
-        WHERE handle LIKE ?;
-    `;
-
-    return await con.query(sql, [`%${handle}%`]);
+    await User.findOneAndUpdate(
+        { user_id: Number(user_id) },
+        {
+            first_name: user.first_name,
+            last_name: user.last_name,
+            email: user.email,
+            password: hashedPassword,
+            handle: user.handle
+        },
+        { new: true }
+    );
 }
 
-module.exports = { getAllUsers, register, updateUser, login, deleteUser, searchUsers }
+async function deleteUser(user_id) {
+    await User.deleteOne({ user_id: Number(user_id) });
+}
+
+async function searchUsers(handle) {
+    const users = await User.find({
+        handle: { $regex: handle, $options: "i" }
+    })
+        .select("-password")
+        .sort({ handle: 1 });
+
+    return users.map(toPlain);
+}
+
+module.exports = { getAllUsers, register, updateUser, login, deleteUser, searchUsers };
