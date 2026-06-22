@@ -51,19 +51,24 @@ async function login(user) {
 }
 
 async function updateUser(user_id, user) {
-    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const update = {
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        handle: user.handle
+    };
 
-    await User.findOneAndUpdate(
+    if (user.password) {
+        update.password = await bcrypt.hash(user.password, 10);
+    }
+
+    const updatedUser = await User.findOneAndUpdate(
         { user_id: Number(user_id) },
-        {
-            first_name: user.first_name,
-            last_name: user.last_name,
-            email: user.email,
-            password: hashedPassword,
-            handle: user.handle
-        },
+        update,
         { new: true }
     );
+
+    return toPlain(updatedUser);
 }
 
 async function deleteUser(user_id) {
