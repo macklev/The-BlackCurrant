@@ -38,7 +38,7 @@ form.addEventListener("submit", async function(event) {
     }
 
     localStorage.setItem("user", JSON.stringify(data));
-    window.location.href = "post.html";
+    window.location.href = "/";
 });
 }
 
@@ -52,6 +52,6 @@ export function getCurrentUser() {
 
 export function removeCurrentUser() {
     localStorage.removeItem("user");
-    window.location.href = "login.html";
+    window.location.href = "/";
 }
 

@@ -25,5 +25,5 @@ loginForm.addEventListener("submit", async function(event) {
     }
 
     localStorage.setItem("user", JSON.stringify(data));
-    window.location.href = "post.html";
+    window.location.href = "/";
 });

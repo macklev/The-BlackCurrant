@@ -209,12 +209,4 @@ async function createComment(event) {
     }
 }
 
-function getProfileImage(profilePicture) {
-    if (profilePicture && profilePicture.trim() !== "") {
-        return profilePicture;
-    }
-
-    return "images/default_profile.png";
-}
-
 loadFeed();

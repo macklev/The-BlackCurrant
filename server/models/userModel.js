@@ -25,7 +25,8 @@ async function register(user) {
     const currentUser = await userExists(user);
     if (currentUser) throw Error("User already exists");
 
-    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const salt= await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(user.password, salt);
     const user_id = await getNextSequence("users");
 
     const createdUser = await User.create({

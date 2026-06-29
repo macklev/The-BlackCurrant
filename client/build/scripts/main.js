@@ -1,7 +1,18 @@
 import { getCurrentUser, removeCurrentUser } from "./user.js";
 
-let cUser = await getCurrentUser()
+const cUser = await getCurrentUser()
+const currentPage = window.location.pathname.split('/').pop() || 'index.html'
+const protectedPages = ['feed.html', 'post.html', 'friends.html', 'profile.html', 'viewProfile.html']
+const publicPages = ['login.html', 'register.html']
 let nav = document.querySelector('nav')
+
+if (protectedPages.includes(currentPage) && !cUser) {
+  window.location.replace('/')
+}
+
+if (publicPages.includes(currentPage) && cUser) {
+  window.location.replace('feed.html')
+}
 
 if(cUser) {
     nav.innerHTML = `

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> | BlackCurrent</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav id="nav"></nav>
+
+    <main class="page-container">
+        <section class="public-profile-card">
+            <img 
+                id="public-profile-picture" 
+                src="images/default-profile.png" 
+                alt="Profile picture" 
+                class="public-profile-picture"
+            >
+
+            <h1 id="public-profile-name"></h1>
+            <p id="public-profile-handle"></p>
+            <p id="public-profile-bio"></p>
+        </section>
+
+        <section class="public-profile-posts-section">
+            <h2>Posts</h2>
+            <section id="public-profile-posts"></section>
+        </section>
+    </main>
+
+    <footer>
+        <h3>&copy; 2026 The BlackCurrent. All rights reserved.</h3>  
+    </footer>
+
+    <script type="module" src="scripts/main.js"></script>
+    <script src="scripts/viewProfile.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,151 @@
+body {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 220, 156, 0.35), transparent 28%),
+    radial-gradient(circle at top right, rgba(67, 16, 24, 0.2), transparent 24%),
+    #c74e51;
+  color: #2b0b0f;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.site-navbar {
+  background: linear-gradient(90deg, #45151b, #682d2e);
+  border-bottom: 3px solid #2b0b0f;
+  box-shadow: 0 8px 20px rgba(43, 11, 15, 0.2);
+}
+
+.brand-mark {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  color: #fbde9c;
+  font-weight: 600;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+  color: #f99256;
+}
+
+.nav-logout-button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: #fbde9c;
+  font: inherit;
+}
+
+.nav-logout-button:hover,
+.nav-logout-button:focus {
+  color: #f99256;
+}
+
+.hero {
+  background: rgba(249, 146, 86, 0.96);
+  border: 4px solid #45151b;
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 16px 24px rgba(43, 11, 15, 0.28);
+  text-align: center;
+}
+
+.card-shadow {
+  box-shadow: 0 16px 24px rgba(43, 11, 15, 0.28);
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  color: #45151b;
+  font-weight: 700;
+}
+
+.display-title,
+.section-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #45151b;
+  font-weight: 700;
+}
+
+.display-title {
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+}
+
+.hero-copy {
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.auth-card {
+  background: #f99256;
+  border: 4px solid #45151b;
+  border-radius: 18px;
+  padding: 1.5rem;
+}
+
+.auth-card-header {
+  border-bottom: 2px solid rgba(69, 21, 27, 0.22);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  color: #45151b;
+  font-weight: 700;
+}
+
+.themed-input {
+  border: 2px solid #45151b;
+  border-radius: 10px;
+  background-color: #fbde9c;
+  color: #2b0b0f;
+}
+
+.themed-input:focus {
+  border-color: #682d2e;
+  box-shadow: 0 0 0 0.2rem rgba(69, 21, 27, 0.15);
+  background-color: #fbde9c;
+  color: #2b0b0f;
+}
+
+.themed-button {
+  background-color: #45151b;
+  color: #ea9dae;
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+}
+
+.themed-button:hover,
+.themed-button:focus {
+  background-color: #682d2e;
+  color: #fbde9c;
+}
+
+.auth-message {
+  color: #45151b;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 991.98px) {
+  .hero {
+    padding: 1.5rem;
+  }
+}
