@@ -121,9 +121,9 @@ export async function updatePost(postId, postContent) {
   );
 }
 
-export async function deletePost(postId) {
+export async function deletePost(postId, userId) {
   return fetchAPI(
-    `/post/deletePost/${postId}`,
+    `/post/deletePost/${postId}/${userId}`,
     {},
     'DELETE'
   );

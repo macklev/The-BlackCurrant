@@ -89,8 +89,12 @@ router
 })
 .delete('/deletePost/:post_id/:user_id', async (req, res) => {
     try {
-        const posts = await Post.deletePost(req.params.post_id)
-        res.send(posts)
+        const posts = await Post.deletePost(
+            req.params.post_id,
+            req.params.user_id
+        );
+        res.json(posts);
+        
     } catch(err) {
         res.status(401).send({message: err.message})
     }

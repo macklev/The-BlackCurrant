@@ -78,15 +78,16 @@ async function updatePost(post_id, post) {
     return await getAllPosts();
 }
 
-async function deletePost(post_id) {
+async function deletePost(post_id, user_id) {
 
     const post = await Post.findOne({
-        post_id: Number(post_id)
+        post_id: Number(post_id),
+        user_id: Number(user_id)
     });
 
 
     if (!post) {
-        throw new Error("Post not found");
+        throw new Error("Post not found or you do not have permission to delete it.");
     }
 
 
@@ -129,7 +130,7 @@ async function deletePost(post_id) {
     });
 
 
-    return await getAllPosts();
+    return await getPostsByUserId(user_id);
 }
 
 module.exports = { getAllPosts, createPost, updatePost, deletePost, getPostsByUserId, getFeedPosts };

@@ -100,8 +100,9 @@ function Post() {
 
 async function handleDelete(postId) {
   try {
-    await deletePost(postId);
+    await deletePost(postId, userId);
     await loadPosts();
+    setSuccessMessage('Post deleted successfully!');
   } catch(err) {
     console.error(err);
     setError("Could not delete post.");
