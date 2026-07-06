@@ -41,6 +41,7 @@ const profileSchema = new mongoose.Schema(
             index: true
         },
         profile_picture: String,
+        profile_picture_public_id: String,
         profile_bio: String,
         user_id: {
             type: Number,
@@ -71,6 +72,7 @@ const postSchema = new mongoose.Schema(
         media: [
             {
                 fileName: String,
+                public_id: String,
                 filePath: String,
                 fileType: String, // 'image' or 'video'
                 mimeType: String,

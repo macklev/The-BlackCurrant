@@ -50,8 +50,22 @@ export async function getProfile(userId) {
   return fetchAPI(`/profile/getProfile/${userId}`);
 }
 
-export async function saveProfile(userId, profileData) {
-  return fetchAPI('/profile/saveProfile', { user_id: userId, ...profileData }, 'POST');
+export async function saveProfile(userId, formData) {
+  const response = await fetch(
+    `${API_BASE_URL}/profile/saveProfile`,
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.message || "Profile update failed");
+  }
+
+  return result;
 }
 
 // Post functions

@@ -30,7 +30,6 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.static("public"));
-app.use("/uploads", express.static("uploads"));
 
 const mongoUrl = process.env.dbURL;
 

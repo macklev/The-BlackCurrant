@@ -55,19 +55,7 @@ async function createPost(post) {
     const numericUserId = Number(post.user_id);
     const post_id = await getNextSequence("posts");
 
-    // Process media files if they exist
-    const media = [];
-    if (post.media && Array.isArray(post.media)) {
-        post.media.forEach(file => {
-            media.push({
-                fileName: file.originalname,
-                filePath: `/uploads/${file.filename}`,
-                fileType: file.mimetype.startsWith('image/') ? 'image' : 'video',
-                mimeType: file.mimetype,
-                uploadedAt: new Date()
-            });
-        });
-    }
+    const media = post.media || [];
 
     await Post.create({
         post_id,

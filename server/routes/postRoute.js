@@ -2,6 +2,7 @@ const express = require("express")
 const router = express.Router()
 const Post = require("../models/postModel")
 const upload = require("../middleware/upload")
+const cloudinary = require("../config/cloudinary")
 
 router
 .get('/getAllPosts', async (req, res) => {
@@ -22,15 +23,60 @@ router
 })
 .post('/createPost', upload.array('media', 5), async (req, res) => {
     try {
+
+        const uploadedMedia = [];
+
+        if (req.files && req.files.length > 0) {
+
+            for (const file of req.files) {
+
+                const result = await new Promise((resolve, reject) => {
+
+                    cloudinary.uploader.upload_stream(
+                        {
+                            folder: `blackcurrant/users/${req.body.user_id}/posts`,
+                            resource_type: "auto"
+                        },
+                        (error, result) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(result);
+                            }
+                        }
+                    ).end(file.buffer);
+
+                });
+
+                uploadedMedia.push({
+                    filePath: result.secure_url,
+                    public_id: result.public_id,
+                    fileType: result.resource_type === "video"
+                        ? "video"
+                        : "image",
+                    fileName: file.originalname,
+                    mimeType: file.mimetype
+                });
+            }
+        }
+
+
         const postData = {
             user_id: req.body.user_id,
             post_content: req.body.post_content,
-            media: req.files || []
+            media: uploadedMedia
         };
-        const posts = await Post.createPost(postData)
-        res.send(posts)
+
+
+        const posts = await Post.createPost(postData);
+
+        res.send(posts);
+
     } catch(err) {
-        res.status(401).send({message: err.message})
+        console.error("Cloudinary upload error:", err);
+        res.status(500).send({
+            message: err.message
+        });
     }
 })
 .put('/updatePost/:post_id', async (req, res) => {

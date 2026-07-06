@@ -8,6 +8,7 @@ function Profile() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [profileFile, setProfileFile] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [formData, setFormData] = useState({
     profile_picture: '',
@@ -42,26 +43,37 @@ function Profile() {
   }, [loadProfile]);
 
   async function handleSubmit(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    setSuccessMessage('');
-    setError('');
+  setSuccessMessage('');
+  setError('');
 
-    if (!userId) {
-      setError('You must be logged in.');
-      return;
-    }
-
-    try {
-      const updated = await saveProfile(userId, formData);
-
-      setProfile(updated);
-      setSuccessMessage('Profile saved!');
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      setError(err.message || 'Could not save profile.');
-    }
+  if (!userId) {
+    setError('You must be logged in.');
+    return;
   }
+
+  try {
+    const data = new FormData();
+
+    data.append("user_id", userId);
+    data.append("profile_bio", formData.profile_bio);
+
+    if (profileFile) {
+      data.append("profile_picture", profileFile);
+    }
+
+    const updated = await saveProfile(userId, data);
+
+    setProfile(updated);
+    setSuccessMessage('Profile saved!');
+    setProfileFile(null);
+
+  } catch (err) {
+    console.error('Error saving profile:', err);
+    setError(err.message || 'Could not save profile.');
+  }
+}
 
   function getProfileImage(profilePicture) {
     if (profilePicture && profilePicture.trim() !== '') {
@@ -106,18 +118,12 @@ function Profile() {
             <h2>Edit Profile</h2>
 
             <form id="profile-form" onSubmit={handleSubmit}>
-              <label htmlFor="profile-picture">Profile Picture URL</label>
+              <label htmlFor="profile-picture">Upload Profile Picture</label>
               <input
-                type="text"
+                type="file"
                 id="profile-picture"
-                placeholder="Images/default_profile.png"
-                value={formData.profile_picture}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    profile_picture: e.target.value
-                  })
-                }
+                accept="image/*"
+                onChange={(e) => setProfileFile(e.target.files[0])}
               />
 
               <label htmlFor="profile-bio">Bio</label>
