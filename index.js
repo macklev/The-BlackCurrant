@@ -29,13 +29,6 @@ const friendRoutes = require("./server/routes/friendRoute")
 const commentRoutes = require("./server/routes/commentRoute")
 const profileRoutes = require("./server/routes/profileRoute")
 
-app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  next();
-});
-
 app.use("/user", userRoutes)
 app.use("/post", postRoutes)
 app.use("/friend", friendRoutes);
