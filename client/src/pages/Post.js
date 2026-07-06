@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { createPost, getUserPosts, getCurrentUser } from '../apiService';
+import { createPost, getUserPosts, getCurrentUser, updatePost, deletePost } from '../apiService';
 
 function Post() {
   const user = getCurrentUser();
@@ -11,6 +11,8 @@ function Post() {
   const [postText, setPostText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [filePreviews, setFilePreviews] = useState([]);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editingText, setEditingText] = useState('');
 
   const loadPosts = useCallback(async () => {
     if (!userId) return;
@@ -96,6 +98,32 @@ function Post() {
   }
 }
 
+async function handleDelete(postId) {
+  try {
+    await deletePost(postId);
+    await loadPosts();
+  } catch(err) {
+    console.error(err);
+    setError("Could not delete post.");
+  }
+}
+
+
+async function handleEdit(postId) {
+  try {
+    await updatePost(postId, editingText);
+
+    setEditingPost(null);
+    setEditingText('');
+
+    await loadPosts();
+
+  } catch(err) {
+    console.error(err);
+    setError("Could not edit post.");
+  }
+}
+
   if (loading) return (
     <main className="page-container">
       <h1>Make a Post</h1>
@@ -169,8 +197,65 @@ function Post() {
           <p className="empty-feed">No posts yet. Create your first post!</p>
         ) : (
           posts.map((post) => (
-            <article key={post.post_id} className="post-card">
-              <p className="post-content">{post.post_content}</p>
+  <article key={post.post_id} className="post-card">
+
+    {editingPost === post.post_id ? (
+      <div className="edit-post">
+
+        <textarea
+          value={editingText}
+          onChange={(e) => setEditingText(e.target.value)}
+        />
+
+        <button
+          onClick={() => handleEdit(post.post_id)}
+        >
+          Save
+        </button>
+
+        <button
+          onClick={() => {
+            setEditingPost(null);
+            setEditingText('');
+          }}
+        >
+          Cancel
+        </button>
+
+      </div>
+
+    ) : (
+
+      <p className="post-content">
+        {post.post_content}
+      </p>
+
+    )}
+
+
+    <div className="post-actions">
+
+      <button
+        onClick={() => {
+          setEditingPost(post.post_id);
+          setEditingText(post.post_content);
+        }}
+      >
+        Edit
+      </button>
+
+
+      <button
+        onClick={() => {
+          if(window.confirm("Delete this post?")) {
+            handleDelete(post.post_id);
+          }
+        }}
+      >
+        Delete
+      </button>
+
+    </div>
               {post.media && post.media.length > 0 && (
                 <div className="post-media">
                   {post.media.map((media, index) => (

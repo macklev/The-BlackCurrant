@@ -1,6 +1,7 @@
 const { getNextSequence } = require("./counterModel");
 const { toPlain } = require("./plain");
 const { User, Friend, Profile, Post } = require("./collections");
+const cloudinary = require("../config/cloudinary");
 
 async function getAllPosts() {
     const posts = await Post.find().sort({ date_created: -1 });
@@ -78,7 +79,55 @@ async function updatePost(post_id, post) {
 }
 
 async function deletePost(post_id) {
-    await Post.deleteOne({ post_id: Number(post_id) });
+
+    const post = await Post.findOne({
+        post_id: Number(post_id)
+    });
+
+
+    if (!post) {
+        throw new Error("Post not found");
+    }
+
+
+    //delete from cloudinary
+    if (post.media && post.media.length > 0) {
+
+        for (const media of post.media) {
+
+            if (media.filePath) {
+
+                // Extract public_id from Cloudinary URL
+                const parts = media.filePath.split("/");
+
+                const fileName = parts[parts.length - 1]
+                    .split(".")[0];
+
+                const folder = parts[parts.length - 2];
+
+
+                const publicId = `${folder}/${fileName}`;
+
+
+                await cloudinary.uploader.destroy(
+                    publicId,
+                    {
+                        resource_type:
+                            media.fileType === "video"
+                                ? "video"
+                                : "image"
+                    }
+                );
+
+            }
+        }
+    }
+
+
+    await Post.deleteOne({
+        post_id: Number(post_id)
+    });
+
 
     return await getAllPosts();
 }

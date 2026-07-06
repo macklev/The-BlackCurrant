@@ -113,6 +113,22 @@ export async function createPost(userId, postContent, files = []) {
   }
 }
 
+export async function updatePost(postId, postContent) {
+  return fetchAPI(
+    `/post/updatePost/${postId}`,
+    { post_content: postContent },
+    'PUT'
+  );
+}
+
+export async function deletePost(postId) {
+  return fetchAPI(
+    `/post/deletePost/${postId}`,
+    {},
+    'DELETE'
+  );
+}
+
 // Comment functions
 export async function getCommentsByPostId(postId) {
   return fetchAPI(`/comment/getCommentsByPostId/${postId}`);

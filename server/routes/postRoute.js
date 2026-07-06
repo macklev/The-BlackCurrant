@@ -87,7 +87,7 @@ router
         res.status(401).send({message: err.message})
     }
 })
-.delete('/deletePost/:post_id', async (req, res) => {
+.delete('/deletePost/:post_id/:user_id', async (req, res) => {
     try {
         const posts = await Post.deletePost(req.params.post_id)
         res.send(posts)
