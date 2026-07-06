@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3500';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export async function fetchAPI(route, data = {}, method = 'GET') {
   const options = {

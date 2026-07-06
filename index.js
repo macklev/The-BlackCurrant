@@ -1,8 +1,22 @@
 require('dotenv').config();
 const express = require("express")
 const mongoose = require("mongoose")
+const cors= require("cors")
 
 const app = express()
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Origin",
+    "X-Requested-With",
+    "Content-Type",
+    "Accept",
+    "Authorization"
+  ]
+}))
 const mongoUrl = process.env.dbURL
 
 app.use(express.json())
