@@ -335,6 +335,7 @@ body {
 .friend-card {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     border: 4px solid #45151B;
     border-radius: 10px;
@@ -353,6 +354,45 @@ body {
 
 .friend-card p {
     margin: 0.25rem 0;
+}
+
+.friend-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: #45151B;
+    flex: 1;
+}
+
+.friend-profile-picture {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 3px solid #45151B;
+    background-color: #FBDE9C;
+}
+
+.friend-profile-link div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.friend-profile-link:hover, .friend-profile-link:focus {
+    color: #FBDE9C;
+}
+
+.friend-profile-link h3 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.friend-profile-link p {
+    margin: 0;
+    line-height: 1.2;
 }
 
 .friend-search-section {
