@@ -10,23 +10,36 @@ function LoginForm() {
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
+  event.preventDefault();
 
-    setIsSubmitting(true);
-    setMessage('');
+  if (isSubmitting) return;
 
-    try {
-      const data = await loginUser(email, password);
-      setCurrentUser(data);
-      setEmail('');
-      setPassword('');
-      navigate('/feed');
-    } catch (error) {
-      setMessage(error.message || 'Login failed');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (!email.trim() || !password.trim()) {
+    setMessage('Email and password are required');
+    return;
+  }
+
+  setIsSubmitting(true);
+  setMessage('');
+
+  try {
+    const data = await loginUser(email, password);
+    setCurrentUser(data);
+
+    setEmail('');
+    setPassword('');
+
+    navigate('/feed');
+  } catch (error) {
+    setMessage(
+      error?.response?.data?.message ||
+      error?.message ||
+      'Login failed'
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <section className="auth-card card-shadow" id="login">

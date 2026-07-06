@@ -1,23 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { getFeedPosts, getCommentsByPostId, createComment, getCurrentUser } from '../apiService';
 
 function Feed() {
+  const user = getCurrentUser();
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const user = getCurrentUser();
 
-  useEffect(() => {
-    loadFeed();
-  }, []);
+  const loadFeed = useCallback(async () => {
+    if (!user?.user_id) return;
 
-  async function loadFeed() {
     try {
       setLoading(true);
+
       const feedPosts = await getFeedPosts(user.user_id);
-      
-//loading
+
       const postsWithComments = await Promise.all(
         feedPosts.map(async (post) => {
           try {
@@ -28,7 +27,7 @@ function Feed() {
           }
         })
       );
-      
+
       setPosts(postsWithComments);
       setError(null);
     } catch (err) {
@@ -37,9 +36,14 @@ function Feed() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [user?.user_id]);
+
+  useEffect(() => {
+    loadFeed();
+  }, [loadFeed]);
 
   async function handleComment(postId, commentText) {
+    if (!user?.user_id) return;
     if (!commentText.trim()) return;
 
     try {

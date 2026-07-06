@@ -13,7 +13,13 @@ function RegisterForm() {
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
+    if (isSubmitting) return;
     event.preventDefault();
+
+    if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim() || !password.trim()) {
+      setMessage('All fields are required');
+      return;
+    }
 
     setIsSubmitting(true);
     setMessage('');

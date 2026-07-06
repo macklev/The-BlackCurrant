@@ -1,26 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { getProfile, getUserPosts } from '../apiService';
 
 function ViewProfile() {
   const { userId } = useParams();
+
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadProfileAndPosts();
-  }, [userId]);
+  const loadProfileAndPosts = useCallback(async () => {
+    if (!userId) return;
 
-  async function loadProfileAndPosts() {
     try {
       setLoading(true);
-      const profileData = await getProfile(userId);
-      setProfile(profileData);
 
+      const profileData = await getProfile(userId);
       const userPosts = await getUserPosts(userId);
+
+      setProfile(profileData);
       setPosts(userPosts || []);
+
       setError('');
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -28,7 +29,11 @@ function ViewProfile() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [userId]);
+
+  useEffect(() => {
+    loadProfileAndPosts();
+  }, [loadProfileAndPosts]);
 
   function getProfileImage(profilePicture) {
     if (profilePicture && profilePicture.trim() !== '') {
@@ -37,41 +42,50 @@ function ViewProfile() {
     return 'Images/default-profile.png';
   }
 
-  if (loading) return (
-    <main className="page-container">
-      <h1>Profile</h1>
-      <p>Loading...</p>
-    </main>
-  );
+  if (loading)
+    return (
+      <main className="page-container">
+        <h1>Profile</h1>
+        <p>Loading...</p>
+      </main>
+    );
 
-  if (error) return (
-    <main className="page-container">
-      <h1>Profile</h1>
-      <p className="error-message">{error}</p>
-    </main>
-  );
+  if (error)
+    return (
+      <main className="page-container">
+        <h1>Profile</h1>
+        <p className="error-message">{error}</p>
+      </main>
+    );
 
   return (
     <main className="page-container">
-      <h1>{profile?.first_name} {profile?.last_name}</h1>
+      <h1>
+        {profile?.first_name} {profile?.last_name}
+      </h1>
 
       {profile && (
         <section className="public-profile-card">
-          <img 
-            id="public-profile-picture" 
-            src={getProfileImage(profile.profile_picture)} 
-            alt="Profile picture" 
+          <img
+            id="public-profile-picture"
+            src={getProfileImage(profile.profile_picture)}
+            alt={`${profile?.first_name || 'user'} profile`}
             className="public-profile-picture"
           />
+
           <h2 id="public-profile-name">
             {profile.first_name} {profile.last_name}
           </h2>
+
           <p id="public-profile-handle">@{profile.handle}</p>
-          <p id="public-profile-bio">{profile.profile_bio || 'No bio yet.'}</p>
+          <p id="public-profile-bio">
+            {profile.profile_bio || 'No bio yet.'}
+          </p>
         </section>
       )}
 
       <h2>Posts</h2>
+
       <section id="public-profile-posts" className="posts-section">
         {posts.length === 0 ? (
           <p>No posts yet.</p>
@@ -80,7 +94,9 @@ function ViewProfile() {
             <article key={post.post_id} className="post-card">
               <p className="post-content">{post.post_content}</p>
               <small className="post-date">
-                {post.date_created ? new Date(post.date_created).toLocaleString() : ''}
+                {post.date_created
+                  ? new Date(post.date_created).toLocaleString()
+                  : ''}
               </small>
             </article>
           ))

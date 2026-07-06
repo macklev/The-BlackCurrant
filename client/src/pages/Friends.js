@@ -1,21 +1,27 @@
-import React, { useEffect, useState } from 'react';
-import { getFriends, addFriend, removeFriend, searchUsers, getCurrentUser } from '../apiService';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  getFriends,
+  addFriend,
+  removeFriend,
+  searchUsers,
+  getCurrentUser
+} from '../apiService';
 
 function Friends() {
+  const user = getCurrentUser();
+
   const [friends, setFriends] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const user = getCurrentUser();
 
-  useEffect(() => {
-    loadFriends();
-  }, []);
+  const loadFriends = useCallback(async () => {
+    if (!user?.user_id) return;
 
-  async function loadFriends() {
     try {
       setLoading(true);
+
       const userFriends = await getFriends(user.user_id);
       setFriends(userFriends || []);
       setError('');
@@ -25,10 +31,25 @@ function Friends() {
     } finally {
       setLoading(false);
     }
+  }, [user?.user_id]);
+
+  useEffect(() => {
+    loadFriends();
+  }, [loadFriends]);
+
+  // Guard loading once (single source of truth)
+  if (loading) {
+    return (
+      <main className="page-container">
+        <h1>Friends</h1>
+        <p>Loading...</p>
+      </main>
+    );
   }
 
   async function handleSearch(e) {
     e.preventDefault();
+
     const handle = searchInput.trim();
 
     if (!handle) {
@@ -47,11 +68,15 @@ function Friends() {
   }
 
   async function handleAddFriend(friendId) {
+    if (!user?.user_id) return;
+
     try {
       await addFriend(user.user_id, friendId);
+
       setError('');
       setSearchInput('');
       setSearchResults([]);
+
       await loadFriends();
     } catch (err) {
       console.error('Error adding friend:', err);
@@ -60,8 +85,11 @@ function Friends() {
   }
 
   async function handleRemoveFriend(friendId) {
+    if (!user?.user_id) return;
+
     try {
       await removeFriend(user.user_id, friendId);
+
       setError('');
       await loadFriends();
     } catch (err) {
@@ -69,13 +97,6 @@ function Friends() {
       setError(err.message || 'Could not remove friend.');
     }
   }
-
-  if (loading) return (
-    <main className="page-container">
-      <h1>Friends</h1>
-      <p>Loading...</p>
-    </main>
-  );
 
   return (
     <main className="page-container">
@@ -85,9 +106,9 @@ function Friends() {
         <h2>Find Friends</h2>
 
         <form id="friend-search-form" onSubmit={handleSearch}>
-          <input 
-            type="text" 
-            id="friend-search-input" 
+          <input
+            type="text"
+            id="friend-search-input"
             placeholder="Search by handle"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -96,19 +117,27 @@ function Friends() {
           <button type="submit">Search</button>
         </form>
 
-        {error && <p id="friends-message" className="error-message">{error}</p>}
+        {error && (
+          <p id="friends-message" className="error-message">
+            {error}
+          </p>
+        )}
 
         {searchResults.length > 0 && (
           <section id="friend-search-results">
             <h3>Search Results</h3>
+
             {searchResults.map((result) => (
               <article key={result.user_id} className="friend-card">
                 <div>
                   <h3>@{result.handle}</h3>
-                  <p>{result.first_name} {result.last_name}</p>
+                  <p>
+                    {result.first_name} {result.last_name}
+                  </p>
                   <p>{result.profile_bio || ''}</p>
                 </div>
-                <button 
+
+                <button
                   className="add-friend-btn"
                   onClick={() => handleAddFriend(result.user_id)}
                 >
@@ -122,6 +151,7 @@ function Friends() {
 
       <section className="friends-section">
         <h2>Your Friends</h2>
+
         <section id="friends-list">
           {friends.length === 0 ? (
             <p>You have not added any friends yet.</p>
@@ -130,10 +160,13 @@ function Friends() {
               <article key={friend.user_id} className="friend-card">
                 <div>
                   <h3>@{friend.handle}</h3>
-                  <p>{friend.first_name} {friend.last_name}</p>
+                  <p>
+                    {friend.first_name} {friend.last_name}
+                  </p>
                   <p>{friend.profile_bio || ''}</p>
                 </div>
-                <button 
+
+                <button
                   className="remove-friend-btn"
                   onClick={() => handleRemoveFriend(friend.user_id)}
                 >

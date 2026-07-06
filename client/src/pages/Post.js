@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { createPost, getUserPosts, getCurrentUser } from '../apiService';
 
 function Post() {
+  const user = getCurrentUser();
+  const userId = user?.user_id;
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -9,16 +11,13 @@ function Post() {
   const [postText, setPostText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [filePreviews, setFilePreviews] = useState([]);
-  const user = getCurrentUser();
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  const loadPosts = useCallback(async () => {
+    if (!userId) return;
 
-  async function loadPosts() {
     try {
       setLoading(true);
-      const userPosts = await getUserPosts(user.user_id);
+      const userPosts = await getUserPosts(userId);
       setPosts(userPosts || []);
       setError('');
     } catch (err) {
@@ -27,7 +26,11 @@ function Post() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [userId]);
+
+   useEffect(() => {
+    loadPosts();
+  }, [loadPosts]);
 
   function handleFileSelect(e) {
     const files = Array.from(e.target.files);
@@ -63,27 +66,35 @@ function Post() {
   }
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    setError('');
-    setSuccessMessage('');
+  e.preventDefault();
+  setError('');
+  setSuccessMessage('');
 
-    if (!postText.trim() && selectedFiles.length === 0) {
-      setError('Please write something or add media before posting.');
-      return;
-    }
-
-    try {
-      await createPost(user.user_id, postText, selectedFiles);
-      setPostText('');
-      setSelectedFiles([]);
-      setFilePreviews([]);
-      setSuccessMessage('Post created successfully!');
-      await loadPosts();
-    } catch (err) {
-      console.error('Error creating post:', err);
-      setError('Post could not be created.');
-    }
+  if (!userId) {
+    setError('You must be logged in.');
+    return;
   }
+
+  if (!postText.trim() && selectedFiles.length === 0) {
+    setError('Please write something or add media before posting.');
+    return;
+  }
+
+  try {
+    await createPost(userId, postText, selectedFiles);
+
+    setPostText('');
+    setSelectedFiles([]);
+    setFilePreviews([]);
+
+    setSuccessMessage('Post created successfully!');
+
+    await loadPosts();
+  } catch (err) {
+    console.error('Error creating post:', err);
+    setError('Post could not be created.');
+  }
+}
 
   if (loading) return (
     <main className="page-container">
