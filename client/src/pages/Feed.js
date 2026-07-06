@@ -108,7 +108,7 @@ function PostCard({ post, onComment, getProfileImage }) {
         <Link to={`/profile/${post.user_id}`} className="profile-link">
           <img 
             src={imageSrc}
-            alt={`${post.handle}'s profile picture`}
+            alt={`${post.handle}'s profile`}
             className="post-profile-picture"
           />
         </Link>
@@ -193,7 +193,7 @@ function CommentCard({ comment, getProfileImage }) {
       <Link to={`/profile/${comment.user_id}`} className="profile-link">
         <img 
           src={imageSrc}
-          alt={`${comment.handle}'s profile picture`}
+          alt={`${comment.handle}'s profile`}
           className="comment-profile-picture"
         />
       </Link>
