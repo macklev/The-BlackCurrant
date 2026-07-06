@@ -1,20 +1,6 @@
 import { useState } from 'react';
-
-async function readResponseBody(response) {
-  const contentType = response.headers.get('content-type') || '';
-
-  if (contentType.includes('application/json')) {
-    return response.json();
-  }
-
-  const text = await response.text();
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { message: text };
-  }
-}
+import { useNavigate } from 'react-router-dom';
+import { registerUser, setCurrentUser } from '../apiService';
 
 function RegisterForm() {
   const [firstName, setFirstName] = useState('');
@@ -24,6 +10,7 @@ function RegisterForm() {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -32,40 +19,23 @@ function RegisterForm() {
     setMessage('');
 
     try {
-      const response = await fetch('/user/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          first_name: firstName,
-          last_name: lastName,
-          handle: username,
-          email,
-          password,
-        }),
+      const data = await registerUser({
+        first_name: firstName,
+        last_name: lastName,
+        handle: username,
+        email,
+        password,
       });
 
-      const data = await readResponseBody(response);
-
-      if (!response.ok) {
-        const fallbackMessage = data.message || 'Registration failed';
-        throw new Error(
-          fallbackMessage.startsWith('Proxy error')
-            ? 'Backend is not running on port 3500 or the proxy target is unavailable.'
-            : fallbackMessage
-        );
-      }
-
-      localStorage.setItem('user', JSON.stringify(data));
-      window.location.href = '/feed.html';
+      setCurrentUser(data);
       setFirstName('');
       setLastName('');
       setUsername('');
       setEmail('');
       setPassword('');
+      navigate('/feed');
     } catch (error) {
-      setMessage(error.message);
+      setMessage(error.message || 'Registration failed');
     } finally {
       setIsSubmitting(false);
     }

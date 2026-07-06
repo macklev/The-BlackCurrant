@@ -68,6 +68,18 @@ const postSchema = new mongoose.Schema(
             required: true,
             maxlength: 280
         },
+        media: [
+            {
+                fileName: String,
+                filePath: String,
+                fileType: String, // 'image' or 'video'
+                mimeType: String,
+                uploadedAt: {
+                    type: Date,
+                    default: Date.now
+                }
+            }
+        ],
         date_created: {
             type: Date,
             default: Date.now

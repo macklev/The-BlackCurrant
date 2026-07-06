@@ -7,6 +7,7 @@ const mongoUrl = process.env.dbURL
 
 app.use(express.json())
 app.use(express.static("public"))
+app.use('/uploads', express.static('uploads'))
 
 const userRoutes = require("./server/routes/userRoute")
 const postRoutes = require("./server/routes/postRoute")

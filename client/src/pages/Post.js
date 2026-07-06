@@ -1,0 +1,189 @@
+import React, { useEffect, useState } from 'react';
+import { createPost, getUserPosts, getCurrentUser } from '../apiService';
+
+function Post() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [postText, setPostText] = useState('');
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [filePreviews, setFilePreviews] = useState([]);
+  const user = getCurrentUser();
+
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  async function loadPosts() {
+    try {
+      setLoading(true);
+      const userPosts = await getUserPosts(user.user_id);
+      setPosts(userPosts || []);
+      setError('');
+    } catch (err) {
+      console.error('Error loading posts:', err);
+      setError('Could not load posts.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleFileSelect(e) {
+    const files = Array.from(e.target.files);
+    
+    if (files.length > 5) {
+      setError('Maximum 5 files allowed per post.');
+      return;
+    }
+
+    setSelectedFiles(files);
+
+    // Create previews
+    const previews = files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve({
+            name: file.name,
+            type: file.type.startsWith('image/') ? 'image' : 'video',
+            src: reader.result
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(previews).then(setFilePreviews);
+  }
+
+  function removeFile(index) {
+    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+    setFilePreviews(filePreviews.filter((_, i) => i !== index));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError('');
+    setSuccessMessage('');
+
+    if (!postText.trim() && selectedFiles.length === 0) {
+      setError('Please write something or add media before posting.');
+      return;
+    }
+
+    try {
+      await createPost(user.user_id, postText, selectedFiles);
+      setPostText('');
+      setSelectedFiles([]);
+      setFilePreviews([]);
+      setSuccessMessage('Post created successfully!');
+      await loadPosts();
+    } catch (err) {
+      console.error('Error creating post:', err);
+      setError('Post could not be created.');
+    }
+  }
+
+  if (loading) return (
+    <main className="page-container">
+      <h1>Make a Post</h1>
+      <p>Loading...</p>
+    </main>
+  );
+
+  return (
+    <main className="page-container">
+      <h1>Make a Post</h1>
+
+      <form className="make-post" id="post-form" onSubmit={handleSubmit}>
+        <textarea 
+          id="post-text" 
+          name="post" 
+          placeholder="Write your post here." 
+          rows="4"
+          value={postText}
+          onChange={(e) => setPostText(e.target.value)}
+        />
+        
+        <div className="file-upload-section">
+          <label htmlFor="file-input" className="file-input-label">
+            📷 Add Images or Videos (up to 5 files)
+          </label>
+          <input
+            type="file"
+            id="file-input"
+            multiple
+            accept="image/*,video/*"
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {filePreviews.length > 0 && (
+          <div className="file-previews">
+            <p className="preview-title">Selected files ({filePreviews.length}):</p>
+            <div className="preview-grid">
+              {filePreviews.map((preview, index) => (
+                <div key={index} className="preview-item">
+                  {preview.type === 'image' ? (
+                    <img src={preview.src} alt={preview.name} className="preview-image" />
+                  ) : (
+                    <video className="preview-video" controls>
+                      <source src={preview.src} />
+                    </video>
+                  )}
+                  <p className="preview-name">{preview.name}</p>
+                  <button
+                    type="button"
+                    className="remove-file-btn"
+                    onClick={() => removeFile(index)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <br />
+        <input type="submit" value="Post" id="button" />
+        {error && <p id="post-message" className="error-message" aria-live="polite">{error}</p>}
+        {successMessage && <p id="post-message" className="success-message" aria-live="polite">{successMessage}</p>}
+      </form>
+
+      <section className="post-feed">
+        {posts.length === 0 ? (
+          <p className="empty-feed">No posts yet. Create your first post!</p>
+        ) : (
+          posts.map((post) => (
+            <article key={post.post_id} className="post-card">
+              <p className="post-content">{post.post_content}</p>
+              {post.media && post.media.length > 0 && (
+                <div className="post-media">
+                  {post.media.map((media, index) => (
+                    <div key={index} className="media-item">
+                      {media.fileType === 'image' ? (
+                        <img src={media.filePath} alt={media.fileName} className="post-image" />
+                      ) : (
+                        <video className="post-video" controls>
+                          <source src={media.filePath} type={media.mimeType} />
+                        </video>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              <small className="post-date">
+                {post.date_created ? new Date(post.date_created).toLocaleString() : ''}
+              </small>
+            </article>
+          ))
+        )}
+      </section>
+    </main>
+  );
+}
+
+export default Post;

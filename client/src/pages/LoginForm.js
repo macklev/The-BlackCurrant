@@ -1,26 +1,13 @@
 import { useState } from 'react';
-
-async function readResponseBody(response) {
-  const contentType = response.headers.get('content-type') || '';
-
-  if (contentType.includes('application/json')) {
-    return response.json();
-  }
-
-  const text = await response.text();
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    return { message: text };
-  }
-}
+import { useNavigate } from 'react-router-dom';
+import { loginUser, setCurrentUser } from '../apiService';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -29,31 +16,13 @@ function LoginForm() {
     setMessage('');
 
     try {
-      const response = await fetch('/user/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await readResponseBody(response);
-
-      if (!response.ok) {
-        const fallbackMessage = data.message || 'Login failed';
-        throw new Error(
-          fallbackMessage.startsWith('Proxy error')
-            ? 'Backend is not running on port 3500 or the proxy target is unavailable.'
-            : fallbackMessage
-        );
-      }
-
-      localStorage.setItem('user', JSON.stringify(data));
-      window.location.href = '/feed.html';
+      const data = await loginUser(email, password);
+      setCurrentUser(data);
       setEmail('');
       setPassword('');
+      navigate('/feed');
     } catch (error) {
-      setMessage(error.message);
+      setMessage(error.message || 'Login failed');
     } finally {
       setIsSubmitting(false);
     }

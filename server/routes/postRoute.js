@@ -1,6 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const Post = require("../models/postModel")
+const upload = require("../middleware/upload")
 
 router
 .get('/getAllPosts', async (req, res) => {
@@ -19,9 +20,14 @@ router
         res.status(401).json({message: err.message})
     }
 })
-.post('/createPost', async (req, res) => {
+.post('/createPost', upload.array('media', 5), async (req, res) => {
     try {
-        const posts = await Post.createPost(req.body)
+        const postData = {
+            user_id: req.body.user_id,
+            post_content: req.body.post_content,
+            media: req.files || []
+        };
+        const posts = await Post.createPost(postData)
         res.send(posts)
     } catch(err) {
         res.status(401).send({message: err.message})

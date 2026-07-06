@@ -55,10 +55,25 @@ async function createPost(post) {
     const numericUserId = Number(post.user_id);
     const post_id = await getNextSequence("posts");
 
+    // Process media files if they exist
+    const media = [];
+    if (post.media && Array.isArray(post.media)) {
+        post.media.forEach(file => {
+            media.push({
+                fileName: file.originalname,
+                filePath: `/uploads/${file.filename}`,
+                fileType: file.mimetype.startsWith('image/') ? 'image' : 'video',
+                mimeType: file.mimetype,
+                uploadedAt: new Date()
+            });
+        });
+    }
+
     await Post.create({
         post_id,
         user_id: numericUserId,
-        post_content: post.post_content
+        post_content: post.post_content,
+        media: media
     });
 
     return await getPostsByUserId(numericUserId);

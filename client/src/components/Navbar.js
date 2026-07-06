@@ -1,17 +1,23 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { getCurrentUser, removeCurrentUser } from '../apiService';
+
 function Navbar() {
-  const currentUser = localStorage.getItem('user');
+  const user = getCurrentUser();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    window.location.href = '/';
+    removeCurrentUser();
+    navigate('/');
+    window.location.reload();
   };
 
   return (
     <nav className="navbar navbar-expand-lg site-navbar navbar-dark">
       <div className="container">
-        <a className="navbar-brand brand-mark" href="/index.html">
-          The Black Current
-        </a>
+        <Link className="navbar-brand brand-mark" to="/">
+          The Black Currant
+        </Link>
         <button
           className="navbar-toggler"
           type="button"
@@ -25,32 +31,27 @@ function Navbar() {
         </button>
         <div className="collapse navbar-collapse" id="siteNavbar">
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0 gap-lg-2">
-            {currentUser ? (
+            {user ? (
               <>
                 <li className="nav-item">
-                  <a className="nav-link" href="/feed.html">
+                  <Link className="nav-link" to="/feed">
                     Feed
-                  </a>
+                  </Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/post.html">
+                  <Link className="nav-link" to="/post">
                     Post
-                  </a>
+                  </Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/friends.html">
+                  <Link className="nav-link" to="/friends">
                     Friends
-                  </a>
+                  </Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/profile.html">
+                  <Link className="nav-link" to="/profile">
                     Profile
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link" href="/viewProfile.html">
-                    View Profile
-                  </a>
+                  </Link>
                 </li>
                 <li className="nav-item">
                   <button type="button" className="nav-link nav-logout-button" onClick={handleLogout}>
@@ -61,14 +62,14 @@ function Navbar() {
             ) : (
               <>
                 <li className="nav-item">
-                  <a className="nav-link" href="/login.html">
+                  <Link className="nav-link" to="/login">
                     Login
-                  </a>
+                  </Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link" href="/register.html">
+                  <Link className="nav-link" to="/register">
                     Register
-                  </a>
+                  </Link>
                 </li>
               </>
             )}
