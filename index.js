@@ -13,7 +13,6 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // allow mobile apps, Postman, curl (no origin)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
@@ -28,8 +27,6 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-
-app.options("*", cors(corsOptions));
 
 app.use(express.json());
 app.use(express.static("public"));
